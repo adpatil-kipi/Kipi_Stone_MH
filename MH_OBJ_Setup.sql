@@ -1,0 +1,47 @@
+USE ROLE SYSADMIN;
+
+create database MH_DB;
+
+USE DATABASE MH_DB;
+
+-- Schema Creation
+CREATE SCHEMA IF NOT EXISTS MH_RAW
+COMMENT = 'Landing raw CSV files into this stage.';
+
+CREATE SCHEMA IF NOT EXISTS MH_HARMONIZED
+COMMENT = 'Cleaning and transforming data in this layer.';
+
+CREATE SCHEMA IF NOT EXISTS MH_CONSUMPTION
+COMMENT = 'Creating final views in this layer.';
+
+
+-- Create a stage to upload CSVs
+CREATE OR REPLACE STAGE MH_DB.MH_RAW.MH_STAGE
+COMMENT = 'Stage for uploading CSV files';
+
+-- Create a file format to handle CSVs
+CREATE OR REPLACE FILE FORMAT MH_DB.MH_RAW.MH_FILE_FORMAT
+  TYPE = 'CSV'
+  FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+  SKIP_HEADER = 0
+  COMMENT = 'File format for CSV ingestion';
+
+
+-- Warehouse Creation
+CREATE WAREHOUSE IF NOT EXISTS MH_ELT_WH
+  WAREHOUSE_SIZE = 'XSMALL'
+  MAX_CLUSTER_COUNT = 2
+  MIN_CLUSTER_COUNT = 1
+  SCALING_POLICY = 'ECONOMY'
+  AUTO_SUSPEND = 60
+  AUTO_RESUME = TRUE
+  INITIALLY_SUSPENDED = TRUE
+  COMMENT = 'Warehouse for ELT purposes';
+
+
+CREATE WAREHOUSE IF NOT EXISTS MH_ANALYST_WH
+  WAREHOUSE_SIZE = 'XSMALL'
+  AUTO_SUSPEND = 60
+  AUTO_RESUME = TRUE
+  INITIALLY_SUSPENDED = TRUE
+  COMMENT = 'Warehouse for data analysis';
